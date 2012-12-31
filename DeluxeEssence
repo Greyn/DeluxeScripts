@@ -1,0 +1,262 @@
+import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.methods.Menu;
+import org.dynamac.bot.api.methods.Mouse;
+import org.dynamac.bot.api.wrappers.*;
+import org.dynamac.bot.script.ScriptDef;
+import org.dynamac.bot.api.wrappers.Tile;
+
+import java.awt.*;
+import java.awt.Graphics;
+public class DeluxeEssence extends ScriptDef {
+
+    int bankbooth = 782;
+    int aubury = 5913;
+    int[] pickaxe = {1275, 24154};
+    int mine = 2491;
+    int portal = 39831;
+    int door = 24381;
+
+    Tile[] toMines = new Tile[] { new Tile(12086, 12024, 0), new Tile(12081, 12015, 0)};
+    Tile[] toAubury = new Tile[] { new Tile(3252, 3421, 0), new Tile(3252, 3426, 0), new Tile(3257, 3428, 0),
+            new Tile(3261, 3425, 0), new Tile(3261, 3420, 0), new Tile(3260, 3415, 0),
+            new Tile(3259, 3410, 0), new Tile(3257, 3405, 0), new Tile(3254, 3401, 0),
+            new Tile(3253, 3401, 0) };
+    Tile[] toBank = new Tile[] { new Tile(3252, 3401, 0), new Tile(3257, 3403, 0), new Tile(3258, 3408, 0),
+            new Tile(3260, 3413, 0), new Tile(3261, 3418, 0), new Tile(3261, 3423, 0),
+            new Tile(3260, 3428, 0), new Tile(3255, 3427, 0), new Tile(3252, 3423, 0),
+            new Tile(3253, 3421, 0) };
+    TileArea doorArea = new TileArea(new Tile[] { new Tile(3254, 3403, 0), new Tile(3249, 3404, 0), new Tile(3248, 3399, 0),
+            new Tile(3252, 3396, 0), new Tile(3255, 3400, 0) });
+    @Override
+    public void run() {
+        while(true) {
+            try {
+                AnimableObject BANK = Objects.getNearestAnimableObjectByID(bankbooth);
+                AnimableObject MINE = Objects.getNearestAnimableObjectByID(mine);
+                AnimableObject PORTAL = Objects.getNearestAnimableObjectByID(portal);
+                NPC AUBURY = NPCs.getNearest(aubury);
+                BoundaryObject DOOR = Objects.getNearestBoundaryObjectByID(door);
+
+
+
+                if (!Bank.isOpen()) {
+                    if (isSOF()) {
+                        cancelSOF();
+                    }
+                    if (Inventory.isFull()) {
+                        if (BANK != null) {
+                            if (doorArea.contains(DOOR.getLocation())) {
+                                Camera.turnTo(DOOR.getLocation());
+                                interact(DOOR, "Open");
+                            }
+                            if (!doorArea.contains(DOOR.getLocation())) {
+                                if (BANK.isOnScreen()) {
+                                    // Point p = BANK.getRandomPoint();
+                                    Point p = BANK.getLocation().getScreenLocation();
+                                    if (!Menu.isOpen()) {
+                                        Mouse.move(p);
+                                        if (Menu.getIndex("Bank", "Bank booth") == 0) {
+                                            Mouse.click();
+                                            sleep(1500);
+                                        }
+                                        if (Menu.getIndex("Bank", "Bank booth") > 0) {
+                                            Mouse.rightClick();
+                                            sleep(1500);
+                                        }
+                                    }
+                                    if (Menu.isOpen()) {
+                                        if (Menu.contains("Bank", "Bank booth")) {
+                                            Menu.click("Bank", "Bank booth");
+                                        } else {
+                                            Mouse.move(Players.getMyPlayer().getRandomPoint());
+                                        }
+                                    }
+                                } else {
+                                    if (Walking.isPathLocal(toBank)) {
+                                        Walking.walkPath(toBank);
+                                    }
+                                }
+                            }
+                        }
+                        if (MINE != null) {
+                            //if (PORTAL.isOnScreen()) {
+                            if (DeluxeAPI.isOnScreenWithToolbar(PORTAL)) {
+                                interact(PORTAL, "Enter");
+                            }   else {
+                                Tile[] toPortal =  Walking.generateStraightScreenPath(PORTAL.getLocation());
+                                if (Walking.isPathLocal(toPortal)) {
+                                    Walking.walkPath(toPortal);
+                                }
+                            }
+                        }
+                    }
+                    if (!Inventory.isFull()) {
+                        if (BANK != null && MINE == null) {
+                            if (doorArea.contains(DOOR.getLocation())) {
+                                if (DeluxeAPI.isOnScreenWithToolbar(DOOR)) {
+                                    Camera.turnTo(DOOR.getLocation());
+                                    interact(DOOR, "Open");
+                                } else {
+                                    Camera.turnTo(DOOR.getLocation());
+                                }
+                            }
+                            if (!doorArea.contains(DOOR.getLocation())) {
+                                //if (!AUBURY.isOnScreen()) {
+                                if (Walking.isPathLocal(toAubury)) {
+                                    Walking.walkPath(toAubury);
+                                }
+                                // }
+                                // if (AUBURY.isOnScreen()) {
+                                if (DeluxeAPI.isOnScreenWithToolbar(AUBURY)) {
+                                    interact(AUBURY, "Teleport");
+                                }
+                            }
+                        }
+                        if (MINE != null && BANK == null) {
+                            if (MINE.isOnScreen()) {
+                                if (Players.getMyPlayer().isIdle()) {
+                                    MINE.doAction("Mine");
+                                    sleep(1500);
+                                }
+                                if (Players.getMyPlayer().isMoving()) {
+                                    sleep(100);
+                                }
+                            }
+                            if (!MINE.isOnScreen()) {
+                                Tile[] toMine2 = Walking.generateStraightScreenPath(MINE.getLocation());
+                                Tile[] toMine = Walking.generateStraightPath(MINE.getLocation());
+                                if (Walking.isPathLocal(toMine2)) {
+                                    Walking.walkPath(toMine2);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (Bank.isOpen()) {
+                    if (Inventory.isFull()) {
+                        Bank.depositAllExcept(pickaxe);
+                    }
+                    if (!Inventory.isFull()) {
+                        Bank.close();
+                    }
+                }
+
+            }catch (final NullPointerException e) {
+            }
+        }
+    }
+
+
+    @Override
+    public void repaint(Graphics g) {
+        Walking.paintPath(g);
+    }
+
+    public boolean isSOF() {
+        InterfaceChild t = Interfaces.get(1252, 7);
+        return t!=null && t.isDisplayed();
+    }
+    public void cancelSOF() {
+        InterfaceChild t = Interfaces.get(1252, 7);
+        t.doAction("Select");
+    }
+
+    private final boolean interact(NPC npc, String s) {
+        npc = NPCs.getNearest(npc.getID());
+        Point p = npc.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+    private final boolean interact(AnimableObject a, String s) {
+        a = Objects.getNearestAnimableObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+    private final boolean interact(AnimatedObject a, String s) {
+        a = Objects.getNearestAnimatedObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+    private final boolean interact(BoundaryObject a, String s) {
+        a = Objects.getNearestBoundaryObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+}
+
+
