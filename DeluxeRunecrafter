@@ -1,0 +1,797 @@
+
+import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.methods.Menu;
+import org.dynamac.bot.api.methods.Mouse;
+import org.dynamac.bot.api.wrappers.*;
+import org.dynamac.bot.script.ScriptDef;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.Graphics;
+import java.io.BufferedReader;
+import java.lang.System;
+import java.net.URL;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URLConnection;
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.GroupLayout;
+import javax.swing.LayoutStyle;
+
+public class DeluxeRunecrafter extends ScriptDef {
+
+    //Animated ID
+    int ruin;
+    int altar;
+    int portal;
+    //
+    //Inventory
+    int essence;
+    int spinticket = 24154;
+    int rune;
+    int talisman;
+    //
+    //Animable ID
+    int bank;
+    String action;
+    String action2;
+    //
+    //Paint
+        boolean counted = false;
+        int runecount;
+        public long startTime;
+        String s = "What to do..?";
+        int startxp = 0;
+        int currentxp = 0;
+        int runeprice = 0;
+        boolean priceget = false;
+        boolean cameraaltar = false;
+    //
+
+
+    Tile[] walktoAltar;
+    Tile[] walktoBank;
+
+    public static RCGUI gui = new RCGUI();
+    public static boolean guiWait = true;
+    public static boolean STARTED = false;
+
+    boolean RESTING = false;
+
+    Tile[] walktoAIRAltar = new Tile[] { new Tile(3185, 3436, 0), new Tile(3185, 3431, 0), new Tile(3181, 3428, 0),
+            new Tile(3176, 3428, 0), new Tile(3171, 3428, 0), new Tile(3166, 3428, 0),
+            new Tile(3163, 3424, 0), new Tile(3160, 3420, 0), new Tile(3155, 3418, 0),
+            new Tile(3150, 3417, 0), new Tile(3145, 3415, 0), new Tile(3141, 3412, 0),
+            new Tile(3138, 3408, 0), new Tile(3133, 3407, 0), new Tile(3131, 3405, 0) };
+    Tile[] walktoAIRBank = new Tile[] { new Tile(3128, 3407, 0), new Tile(3133, 3407, 0), new Tile(3138, 3408, 0),
+            new Tile(3142, 3411, 0), new Tile(3146, 3414, 0), new Tile(3151, 3416, 0),
+            new Tile(3156, 3418, 0), new Tile(3160, 3421, 0), new Tile(3163, 3425, 0),
+            new Tile(3168, 3427, 0), new Tile(3173, 3428, 0), new Tile(3178, 3429, 0),
+            new Tile(3183, 3429, 0), new Tile(3185, 3434, 0), new Tile(3182, 3435, 0) };
+    Tile[] walktoMINDAltar = new Tile[] { new Tile(2945, 3367, 0), new Tile(2944, 3372, 0), new Tile(2948, 3375, 0),
+            new Tile(2951, 3379, 0), new Tile(2956, 3381, 0), new Tile(2961, 3383, 0),
+            new Tile(2963, 3388, 0), new Tile(2964, 3393, 0), new Tile(2965, 3398, 0),
+            new Tile(2967, 3403, 0), new Tile(2970, 3407, 0), new Tile(2973, 3411, 0),
+            new Tile(2977, 3414, 0), new Tile(2980, 3418, 0), new Tile(2984, 3421, 0),
+            new Tile(2987, 3425, 0), new Tile(2988, 3430, 0), new Tile(2989, 3435, 0),
+            new Tile(2987, 3440, 0), new Tile(2983, 3443, 0), new Tile(2979, 3446, 0),
+            new Tile(2976, 3451, 0), new Tile(2975, 3456, 0), new Tile(2975, 3461, 0),
+            new Tile(2972, 3465, 0), new Tile(2973, 3470, 0), new Tile(2975, 3475, 0),
+            new Tile(2976, 3480, 0), new Tile(2978, 3485, 0), new Tile(2982, 3488, 0),
+            new Tile(2984, 3493, 0), new Tile(2984, 3498, 0), new Tile(2983, 3503, 0),
+            new Tile(2980, 3507, 0), new Tile(2980, 3512, 0), new Tile(2981, 3513, 0) };
+    Tile[] walktoMINDBank = new Tile[] { new Tile(2981, 3512, 0), new Tile(2981, 3507, 0), new Tile(2982, 3502, 0),
+            new Tile(2984, 3497, 0), new Tile(2985, 3492, 0), new Tile(2982, 3488, 0),
+            new Tile(2978, 3485, 0), new Tile(2976, 3480, 0), new Tile(2975, 3475, 0),
+            new Tile(2974, 3470, 0), new Tile(2974, 3465, 0), new Tile(2976, 3460, 0),
+            new Tile(2977, 3455, 0), new Tile(2976, 3450, 0), new Tile(2979, 3446, 0),
+            new Tile(2982, 3442, 0), new Tile(2985, 3438, 0), new Tile(2987, 3433, 0),
+            new Tile(2988, 3428, 0), new Tile(2988, 3423, 0), new Tile(2984, 3420, 0),
+            new Tile(2980, 3417, 0), new Tile(2977, 3413, 0), new Tile(2973, 3410, 0),
+            new Tile(2970, 3406, 0), new Tile(2966, 3403, 0), new Tile(2964, 3398, 0),
+            new Tile(2963, 3393, 0), new Tile(2962, 3388, 0), new Tile(2961, 3383, 0),
+            new Tile(2956, 3381, 0), new Tile(2951, 3379, 0), new Tile(2947, 3376, 0),
+            new Tile(2944, 3372, 0), new Tile(2945, 3370, 0) };
+    Tile[] walktoBODYAltar = new Tile[] { new Tile(3093, 3491, 0), new Tile(3088, 3492, 0), new Tile(3083, 3491, 0),
+            new Tile(3080, 3487, 0), new Tile(3075, 3487, 0), new Tile(3071, 3484, 0),
+            new Tile(3069, 3479, 0), new Tile(3068, 3474, 0), new Tile(3067, 3469, 0),
+            new Tile(3065, 3464, 0), new Tile(3062, 3460, 0), new Tile(3059, 3456, 0),
+            new Tile(3056, 3452, 0), new Tile(3055, 3447, 0) };
+    Tile[] walktoBODYBank = new Tile[] { new Tile(3055, 3446, 0), new Tile(3057, 3451, 0), new Tile(3060, 3455, 0),
+            new Tile(3065, 3457, 0), new Tile(3068, 3461, 0), new Tile(3069, 3466, 0),
+            new Tile(3071, 3471, 0), new Tile(3072, 3476, 0), new Tile(3072, 3481, 0),
+            new Tile(3073, 3486, 0), new Tile(3077, 3489, 0), new Tile(3082, 3488, 0),
+            new Tile(3087, 3487, 0), new Tile(3092, 3489, 0) };
+    Tile[] walktoWATERAltar = new Tile[] { new Tile(3269, 3166, 0), new Tile(3274, 3168, 0), new Tile(3275, 3173, 0),
+            new Tile(3272, 3177, 0), new Tile(3267, 3178, 0), new Tile(3262, 3177, 0),
+            new Tile(3258, 3174, 0), new Tile(3253, 3174, 0), new Tile(3249, 3171, 0),
+            new Tile(3245, 3168, 0), new Tile(3240, 3169, 0), new Tile(3236, 3166, 0),
+            new Tile(3234, 3161, 0), new Tile(3230, 3158, 0), new Tile(3225, 3158, 0),
+            new Tile(3220, 3158, 0), new Tile(3215, 3159, 0), new Tile(3210, 3159, 0),
+            new Tile(3205, 3159, 0), new Tile(3200, 3159, 0), new Tile(3195, 3159, 0),
+            new Tile(3190, 3160, 0), new Tile(3185, 3162, 0) };
+    Tile[] walktoWATERBank = new Tile[] { new Tile(3185, 3160, 0), new Tile(3190, 3160, 0), new Tile(3195, 3160, 0),
+            new Tile(3200, 3160, 0), new Tile(3205, 3159, 0), new Tile(3210, 3157, 0),
+            new Tile(3215, 3157, 0), new Tile(3220, 3157, 0), new Tile(3225, 3157, 0),
+            new Tile(3230, 3158, 0), new Tile(3234, 3161, 0), new Tile(3238, 3165, 0),
+            new Tile(3242, 3168, 0), new Tile(3247, 3169, 0), new Tile(3250, 3173, 0),
+            new Tile(3255, 3173, 0), new Tile(3260, 3173, 0), new Tile(3263, 3177, 0),
+            new Tile(3268, 3178, 0), new Tile(3273, 3176, 0), new Tile(3275, 3171, 0),
+            new Tile(3272, 3167, 0), new Tile(3269, 3168, 0) };
+    Tile[] walktoFIREAltar = new Tile[] { new Tile(3382, 3270, 0), new Tile(3379, 3266, 0), new Tile(3374, 3266, 0),
+            new Tile(3369, 3266, 0), new Tile(3364, 3265, 0), new Tile(3359, 3265, 0),
+            new Tile(3354, 3264, 0), new Tile(3349, 3264, 0), new Tile(3344, 3264, 0),
+            new Tile(3339, 3264, 0), new Tile(3334, 3264, 0), new Tile(3329, 3263, 0),
+            new Tile(3326, 3259, 0), new Tile(3326, 3254, 0), new Tile(3326, 3249, 0),
+            new Tile(3326, 3244, 0), new Tile(3325, 3239, 0), new Tile(3320, 3237, 0),
+            new Tile(3315, 3235, 0), new Tile(3310, 3235, 0), new Tile(3307, 3239, 0),
+            new Tile(3307, 3244, 0), new Tile(3309, 3249, 0), new Tile(3312, 3252, 0) };
+    Tile[] walktoFIREBank = new Tile[] { new Tile(3311, 3251, 0), new Tile(3307, 3247, 0), new Tile(3307, 3242, 0),
+            new Tile(3307, 3237, 0), new Tile(3312, 3235, 0), new Tile(3317, 3235, 0),
+            new Tile(3322, 3236, 0), new Tile(3324, 3241, 0), new Tile(3326, 3246, 0),
+            new Tile(3326, 3251, 0), new Tile(3326, 3256, 0), new Tile(3328, 3261, 0),
+            new Tile(3332, 3264, 0), new Tile(3337, 3264, 0), new Tile(3342, 3263, 0),
+            new Tile(3347, 3264, 0), new Tile(3352, 3264, 0), new Tile(3357, 3264, 0),
+            new Tile(3362, 3264, 0), new Tile(3367, 3264, 0), new Tile(3372, 3265, 0),
+            new Tile(3377, 3266, 0), new Tile(3382, 3267, 0), new Tile(3382, 3269, 0) };
+    Tile[] walktoEARTHAltar = new Tile[] { new Tile(3253, 3420, 0), new Tile(3252, 3425, 0), new Tile(3256, 3428, 0),
+            new Tile(3261, 3428, 0), new Tile(3266, 3428, 0), new Tile(3271, 3428, 0),
+            new Tile(3276, 3428, 0), new Tile(3281, 3429, 0), new Tile(3285, 3432, 0),
+            new Tile(3286, 3437, 0), new Tile(3287, 3442, 0), new Tile(3288, 3447, 0),
+            new Tile(3288, 3452, 0), new Tile(3289, 3457, 0), new Tile(3292, 3461, 0),
+            new Tile(3297, 3461, 0), new Tile(3301, 3464, 0), new Tile(3304, 3468, 0),
+            new Tile(3305, 3471, 0) };
+    Tile[] walktoEARTHBank = new Tile[] { new Tile(3306, 3472, 0), new Tile(3303, 3468, 0), new Tile(3300, 3464, 0),
+            new Tile(3295, 3461, 0), new Tile(3290, 3459, 0), new Tile(3288, 3454, 0),
+            new Tile(3286, 3449, 0), new Tile(3285, 3444, 0), new Tile(3284, 3439, 0),
+            new Tile(3284, 3434, 0), new Tile(3281, 3430, 0), new Tile(3276, 3429, 0),
+            new Tile(3271, 3428, 0), new Tile(3266, 3428, 0), new Tile(3261, 3429, 0),
+            new Tile(3256, 3429, 0), new Tile(3252, 3426, 0), new Tile(3252, 3421, 0),
+            new Tile(3253, 3420, 0) };
+
+    Rectangle SCREEN = new Rectangle(00, 00, 100, 100);
+
+    public static String getTime(long millis) {
+        long time = millis / 1000;
+        String seconds = Integer.toString((int) (time % 60));
+        String minutes = Integer.toString((int) ((time % 3600) / 60));
+        String hours = Integer.toString((int) (time / 3600));
+        for (int i = 0; i < 2; i++) {
+            if (seconds.length() < 2) {
+                seconds = "0" + seconds;
+            }
+            if (minutes.length() < 2) {
+                minutes = "0" + minutes;
+            }
+            if (hours.length() < 2) {
+                hours = "0" + hours;
+            }
+        }
+        return hours + ":" + minutes + ":" + seconds + "";
+    }
+    //Image
+    private Image getImage(String url) {
+        try {
+            return ImageIO.read(new URL(url));
+        } catch(IOException e) {
+            return null;
+        }
+    }
+
+    private final Image MAIN_PAINT = getImage("http://img338.imageshack.us/img338/9803/deluxerunecrafter.jpg");
+
+    @Override
+    public void repaint(Graphics g) {
+        Walking.paintPath(g);
+
+        g.drawImage(MAIN_PAINT, 0, 389, null);
+        g.setColor(Color.white);{
+            g.drawString("" + getTime(System.currentTimeMillis() - startTime), 70, 460);
+            g.drawString("" + s , 70, 504);
+
+            g.drawString("" + (currentxp - startxp), 227, 453);
+            g.drawString("" + ((currentxp - startxp) * 3600000l) / (System.currentTimeMillis() - startTime) + " /hr", 386, 453);
+
+            g.drawString("" + runecount, 227, 482);
+            g.drawString("" + (runecount * 3600000l) / (System.currentTimeMillis() - startTime) + " /hr", 386, 482);
+
+            g.drawString("" + (runeprice*runecount), 227, 511);
+            g.drawString("" + ((runeprice*runecount)* 3600000l) / (System.currentTimeMillis() - startTime) + " /hr", 386, 511);
+        }
+    }
+
+    @Override
+    public void run() {
+        gui.setVisible(true);
+        while (guiWait) {
+            sleep(100L);
+        }
+
+        if (gui.comboBox1.getSelectedItem().toString().contains("Air runes")) {
+            rune = 556;
+            essence = 1436;
+            talisman = 1438;
+
+            ruin = 2452;
+            altar = 2478;
+            portal = 2465;
+            bank = 782;
+            action = "Bank";
+            action2 = "Bank booth";
+
+            walktoBank = walktoAIRBank;
+            walktoAltar = walktoAIRAltar;
+        }
+        if (gui.comboBox1.getSelectedItem().toString().contains("Mind runes")) {
+            rune = 558;
+            essence = 1436;
+            talisman = 1448;
+
+            ruin = 2453;
+            altar = 2479;
+            portal = 2466;
+            bank = 11758;
+            action = "Bank";
+            action2 = "Bank booth";
+
+            walktoBank = walktoMINDBank;
+            walktoAltar = walktoMINDAltar;
+        }
+        if (gui.comboBox1.getSelectedItem().toString().contains("Body runes")) {
+            rune = 559;
+            essence = 1436;
+            talisman = 1446;
+
+            ruin = 2457;
+            altar = 2483;
+            portal = 2470;
+            bank = 42373;
+            action = "Bank";
+            action2 = "Counter";
+
+            walktoBank = walktoBODYBank;
+            walktoAltar = walktoBODYAltar;
+        }
+        if (gui.comboBox1.getSelectedItem().toString().contains("Water runes")) {
+            rune = 555;
+            essence = 1436;
+            talisman  = 1444;
+
+            ruin = 2454;
+            altar = 2480;
+            portal = 2467;
+            bank = 76274;
+            action = "Bank";
+            action2 = "Bank booth";
+
+            walktoBank = walktoWATERBank;
+            walktoAltar = walktoWATERAltar;
+        }
+        if (gui.comboBox1.getSelectedItem().toString().contains("Fire runes")) {
+            rune = 554;
+            essence = 1436;
+            talisman = 1442;
+
+            ruin = 2456;
+            altar = 2482;
+            portal = 2469;
+            bank = 27663;
+            action = "Bank";
+            action2 = "Bank chest";
+
+            walktoBank = walktoFIREBank;
+            walktoAltar = walktoFIREAltar;
+        }
+        if (gui.comboBox1.getSelectedItem().toString().contains("Earth runes")) {
+            rune = 557;
+            essence = 1436;
+            talisman = 1440;
+
+            ruin = 2455;
+            altar = 2481;
+            portal = 2468;
+            bank = 782;
+            action = "Bank";
+            action2 = "Bank booth";
+
+            walktoBank = walktoEARTHBank;
+            walktoAltar = walktoEARTHAltar;
+        }
+
+
+        startTime = System.currentTimeMillis();
+        runecount = 0;
+        startxp = Skills.getSkillExperience(Skills.RUNECRAFTING_INDEX);
+
+        if (priceget == false) {
+            runeprice = getPrice(rune);
+            priceget = true;
+        }
+        while(true) {
+            if (STARTED == true) {
+                //Here i put all the bulsshit crap things
+                AnimatedObject RUIN = Objects.getNearestAnimatedObjectByID(ruin);
+                AnimatedObject ALTAR = Objects.getNearestAnimatedObjectByID(altar);
+                AnimatedObject PORTAL = Objects.getNearestAnimatedObjectByID(portal);
+                AnimableObject BANK  = Objects.getNearestAnimableObjectByID(bank);
+
+                currentxp = Skills.getSkillExperience(Skills.RUNECRAFTING_INDEX);
+
+                try {
+                    if (Players.getMyPlayer() != null) {
+                        if (BANK != null) {
+                            if (Bank.isOpen()) {
+                                if (Inventory.getCount(rune) > 0) {
+                                    s = "Deposit the inventory.." ;
+                                    Bank.depositAllExcept(talisman, spinticket);
+                                }
+                                if (Inventory.getCount(rune) == 0) {
+                                    if (Inventory.getCount(essence) == 0) {
+                                        s = "Withdraw the essence!";
+                                        Bank.withdraw(essence, 0);
+                                        sleep(1000);
+                                    }
+                                }
+                                if (Inventory.getCount(rune) == 0) {
+                                    if (Inventory.getCount(essence) > 0) {
+                                        s = "Close te bank!";
+                                        Bank.close();
+                                        sleep(500);
+                                    }
+                                }
+                            } else {
+                                if (isSOF()) {
+                                    cancelSOF();
+                                }
+                               if (BANK.isOnScreen()) {
+                                    if (Players.getMyPlayer().getAnimationID() == -1) {
+                                        if (Inventory.getCount(essence) == 0) {
+                                            Point p = BANK.getLocation().getScreenLocation();
+                                            if (!Menu.isOpen()) {
+                                                s = "Opening the bank";
+                                                Mouse.move(p);
+                                                if (Menu.getIndex(action, action2) == 0) {
+                                                    Mouse.click();
+                                                    sleep(1500);
+                                                }
+                                                if (Menu.getIndex("Bank", "Bank booth") > 0) {
+                                                    Mouse.rightClick();
+                                                    sleep(1500);
+                                                }
+                                            }
+                                            if (Menu.isOpen()) {
+                                                if (Menu.contains("Bank", "Bank booth")) {
+                                                    Menu.click("Bank", "Bank booth");
+                                                } else {
+                                                    Mouse.move(Players.getMyPlayer().getRandomPoint());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ALTAR == null) {
+                            if (Inventory.getCount(essence) > 0) {
+                                counted = false;
+                                if (RUIN == null) {
+                                    if (Walking.isPathLocal(walktoAltar)) {
+                                        s = "Walking to ruins";
+                                        Walking.walkPath(walktoAltar);
+                                    }
+                                }
+                                if (RUIN != null) {
+                                    if (gui.radioButton1.isSelected() || gui.radioButton3.isSelected()) {
+                                        Camera.turnTo(RUIN.getLocation());
+                                        s = "Entering the altar";
+                                        interact(RUIN, "Enter");
+                                    }
+                                    if (gui.radioButton2.isSelected() || gui.radioButton4.isSelected()) {
+                                        if (Inventory.getItemByID(talisman).isSelected()) {
+                                            Point p = RUIN.getLocation().getScreenLocation();
+                                            if (!Menu.isOpen()) {
+                                                Mouse.move(p);
+                                                if (Menu.getIndex("Use", "Mysterious ruins") == 0) {
+                                                    Mouse.click();
+                                                    sleep(1500);
+                                                }
+                                                if (Menu.getIndex("Use", "Mysterious ruins") > 0) {
+                                                    Mouse.rightClick();
+                                                    sleep(1500);
+                                                }
+                                            }
+                                            if (Menu.isOpen()) {
+                                                if (Menu.contains("Use", "Mysterious ruins")) {
+                                                    Menu.click("Use", "Mysterious ruins");
+                                                } else {
+                                                    Mouse.move(Players.getMyPlayer().getRandomPoint());
+                                                }
+                                            }
+                                        } else {
+                                            Inventory.getItemByID(talisman).doAction("Use");
+                                            sleep(800);
+                                        }
+                                    }
+                                }
+                            }
+                            if (Inventory.getCount(essence) == 0) {
+                                if (!Bank.isOpen()) {
+                                    if (Walking.isPathLocal(walktoBank)) {
+                                        s = "Walking to the bank";
+                                        Walking.walkPath(walktoBank);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ALTAR != null) {
+                            if (Players.getMyPlayer().getAnimationID() == -1) {
+                                if (Inventory.getCount(essence) > 0) {
+                                    if (ALTAR.isOnScreen()) {
+                                        do {
+                                            Camera.turnTo(PORTAL.getLocation());
+                                        } while(Players.getMyPlayer().getAnimationID() == 791);
+                                        s = "Crafting the runes";
+                                        if (cameraaltar == false) {
+                                            if (Players.getMyPlayer().getAnimationID() != 791) {
+
+                                                    interact(ALTAR, "Craft");
+
+                                                Camera.turnTo(ALTAR.getLocation());
+                                                interact(ALTAR, "Craft");
+                                                cameraaltar = true;
+                                            }
+                                        }
+                                        interact(ALTAR, "Craft");
+                                    } else {
+                                        Tile[] walktoAltar = Walking.generateStraightScreenPath(ALTAR.getLocation());
+                                        if (Walking.isPathLocal(walktoAltar)) {
+                                            s = "Walking to the altar";
+                                            Walking.walkPath(walktoAltar);
+                                        }
+                                    }
+                                }
+                                if (Inventory.getCount(essence) == 0) {
+                                    if (counted == false) {
+                                        runecount = runecount + Inventory.getItemByID(rune).getStackSize();
+                                        counted = true;
+                                    }
+                                    if (PORTAL.isOnScreen()) {
+                                        Camera.turnTo(PORTAL.getLocation());
+                                        s = "Leaving altar";
+                                        interact(PORTAL, "Enter");
+                                        cameraaltar = false;
+                                    } else {
+                                        Tile[] walktoPortal = Walking.generateStraightScreenPath(PORTAL.getLocation());
+                                        if (Walking.isPathLocal(walktoPortal)) {
+                                            Walking.walkPath(walktoPortal);
+                                        }
+                                        Camera.turnTo(PORTAL.getLocation());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }catch (final NullPointerException e) {
+                }
+            }
+        }
+    }
+
+
+    private final boolean interact(NPC npc, String s) {
+        npc = NPCs.getNearest(npc.getID());
+        Point p = npc.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+    private final boolean interact(AnimableObject a, String s) {
+        a = Objects.getNearestAnimableObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+    private final boolean interact(AnimatedObject a, String s) {
+        a = Objects.getNearestAnimatedObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+
+    private static int getPrice(int id) {
+        try {
+            URLConnection con = new URL(
+                    "http://open.tip.it/json/ge_single_item?item=" + id)
+                    .openConnection();
+            String line;
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            line = in.readLine();
+            if (line.contains("mark_price")) {
+                line = line.substring(line.indexOf("mark_price\":\"")
+                        + "mark_price\":\"".length());
+                line = line.substring(0, line.indexOf("\""));
+                return Integer.parseInt(line.replaceAll(",", ""));
+            }
+            in.close();
+        } catch (Exception e) {
+        }
+        return -1;
+    }
+
+    public boolean isSOF() {
+        InterfaceChild t = Interfaces.get(1252, 7);
+        return t!=null && t.isDisplayed();
+    }
+    public void cancelSOF() {
+        InterfaceChild t = Interfaces.get(1252, 7);
+        t.doAction("Select");
+    }
+
+
+    /**
+     * @author Greyn Dynamac
+     */
+    public static class RCGUI extends JFrame {
+        public RCGUI() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner Evaluation license - Greyn Dynamac
+            button1 = new JButton();
+            textField1 = new JTextField();
+            textField2 = new JTextField();
+            tabbedPane1 = new JTabbedPane();
+            panel1 = new JPanel();
+            comboBox1 = new JComboBox();
+            radioButton1 = new JRadioButton();
+            radioButton2 = new JRadioButton();
+            panel2 = new JPanel();
+            comboBox2 = new JComboBox();
+            radioButton3 = new JRadioButton();
+            radioButton4 = new JRadioButton();
+
+            //======== this ========
+            Container contentPane = getContentPane();
+
+            //---- button1 ----
+            button1.setText("Start");
+           // button1.setBackground(Color.red);
+            button1.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    button1ActionPerformed(evt);
+                }
+            });
+
+            //---- textField1 ----
+            textField1.setText("Welcome to DeluxeRunecrafter");
+
+            //---- textField2 ----
+            textField2.setText("Select what to craft and how :)");
+
+            //======== tabbedPane1 ========
+            {
+
+                //======== panel1 ========
+                {
+
+
+                    //---- comboBox1 ----
+                    String[] arrayOfString1 = { "Select what to craft.",
+                            "Air runes",
+                            "Water runes",
+                            "Earth runes",
+                            "Fire runes",
+                            "Mind runes",
+                            "Body runes"};
+                    comboBox1 = new JComboBox(arrayOfString1);
+                    comboBox1.setToolTipText("Rune type");
+                    comboBox1.setBackground(Color.lightGray);
+
+                    //---- radioButton1 ----
+                    radioButton1.setText("I am wearing an tiara");
+                    radioButton1.setSelected(true);
+
+                    //---- radioButton2 ----
+                    radioButton2.setText("I have an talisman");
+
+                    GroupLayout panel1Layout = new GroupLayout(panel1);
+                    panel1.setLayout(panel1Layout);
+                    panel1Layout.setHorizontalGroup(
+                            panel1Layout.createParallelGroup()
+                                    .addGroup(panel1Layout.createSequentialGroup()
+                                            .addContainerGap()
+                                            .addGroup(panel1Layout.createParallelGroup()
+                                                    .addComponent(comboBox1, GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                                                    .addGroup(panel1Layout.createSequentialGroup()
+                                                            .addGroup(panel1Layout.createParallelGroup()
+                                                                    .addComponent(radioButton2)
+                                                                    .addComponent(radioButton1))
+                                                            .addGap(0, 176, Short.MAX_VALUE)))
+                                            .addContainerGap())
+                    );
+                    panel1Layout.setVerticalGroup(
+                            panel1Layout.createParallelGroup()
+                                    .addGroup(panel1Layout.createSequentialGroup()
+                                            .addContainerGap()
+                                            .addComponent(comboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(radioButton1)
+                                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(radioButton2)
+                                            .addContainerGap(62, Short.MAX_VALUE))
+                    );
+                }
+                tabbedPane1.addTab("Free to play", panel1);
+
+
+                //======== panel2 ========
+                {
+
+                    //---- radioButton3 ----
+                    radioButton3.setText("I am wearing an tiara");
+                    radioButton3.setSelected(true);
+
+                    //---- radioButton4 ----
+                    radioButton4.setText("I have an talisman");
+
+                    GroupLayout panel2Layout = new GroupLayout(panel2);
+                    panel2.setLayout(panel2Layout);
+                    panel2Layout.setHorizontalGroup(
+                            panel2Layout.createParallelGroup()
+                                    .addGroup(panel2Layout.createSequentialGroup()
+                                            .addContainerGap()
+                                            .addGroup(panel2Layout.createParallelGroup()
+                                                    .addComponent(comboBox2, GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                                                    .addGroup(panel2Layout.createSequentialGroup()
+                                                            .addGroup(panel2Layout.createParallelGroup()
+                                                                    .addComponent(radioButton4)
+                                                                    .addComponent(radioButton3))
+                                                            .addGap(0, 176, Short.MAX_VALUE)))
+                                            .addContainerGap())
+                    );
+                    panel2Layout.setVerticalGroup(
+                            panel2Layout.createParallelGroup()
+                                    .addGroup(panel2Layout.createSequentialGroup()
+                                            .addContainerGap()
+                                            .addComponent(comboBox2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                            .addGap(18, 18, 18)
+                                            .addComponent(radioButton3)
+                                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(radioButton4)
+                                            .addContainerGap(62, Short.MAX_VALUE))
+                    );
+                }
+                tabbedPane1.addTab("Members", panel2);
+
+            }
+
+            GroupLayout contentPaneLayout = new GroupLayout(contentPane);
+            contentPane.setLayout(contentPaneLayout);
+            contentPaneLayout.setHorizontalGroup(
+                    contentPaneLayout.createParallelGroup()
+                            .addGroup(contentPaneLayout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(textField2)
+                                            .addComponent(textField1)
+                                            .addComponent(tabbedPane1))
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(button1, GroupLayout.PREFERRED_SIZE, 76, GroupLayout.PREFERRED_SIZE)
+                                    .addContainerGap(9, Short.MAX_VALUE))
+            );
+            contentPaneLayout.setVerticalGroup(
+                    contentPaneLayout.createParallelGroup()
+                            .addGroup(contentPaneLayout.createSequentialGroup()
+                                    .addContainerGap()
+                                    .addGroup(contentPaneLayout.createParallelGroup()
+                                            .addGroup(contentPaneLayout.createSequentialGroup()
+                                                    .addComponent(textField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                    .addComponent(textField2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                    .addGap(11, 11, 11)
+                                                    .addComponent(tabbedPane1))
+                                            .addComponent(button1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addContainerGap())
+            );
+            pack();
+            setLocationRelativeTo(getOwner());
+
+            //---- buttonGroup1 ----
+            ButtonGroup buttonGroup1 = new ButtonGroup();
+            buttonGroup1.add(radioButton1);
+            buttonGroup1.add(radioButton2);
+            buttonGroup1.add(radioButton3);
+            buttonGroup1.add(radioButton4);
+
+            /*//---- buttonGroup2 ----
+            ButtonGroup buttonGroup2 = new ButtonGroup();
+            buttonGroup2.add(radioButton3);
+            buttonGroup2.add(radioButton4);   */
+            // JFormDesigner - End of component initialization  //GEN-END:initComponents
+        }
+
+        private void button1ActionPerformed(java.awt.event.ActionEvent evt) {
+            guiWait = false;
+            gui.dispose();
+            STARTED = true;
+        }
+
+        // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+        // Generated using JFormDesigner Evaluation license - Greyn Dynamac
+        private JButton button1;
+        private JTextField textField1;
+        private JTextField textField2;
+        private JTabbedPane tabbedPane1;
+        private JPanel panel1;
+        private JComboBox comboBox1;
+        private JRadioButton radioButton1;
+        private JRadioButton radioButton2;
+        private JPanel panel2;
+        private JComboBox comboBox2;
+        private JRadioButton radioButton3;
+        private JRadioButton radioButton4;
+        // JFormDesigner - End of variables declaration  //GEN-END:variables
+    }
+
+
+
+}
