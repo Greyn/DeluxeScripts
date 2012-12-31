@@ -1,0 +1,160 @@
+import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.methods.Mouse;
+import org.dynamac.bot.api.wrappers.*;
+
+import java.awt.*;
+
+public class DeluxeAPI {
+    public static Rectangle NO_TOOLBAR_SCREEN = new Rectangle(4, 53, 509, 329);
+    public static Rectangle TOOLBAR_SCREEN = new Rectangle(4, 53, 510, 256);
+
+    //Mouse interacting
+    public static boolean interact(NPC npc, String s) {
+        npc = NPCs.getNearest(npc.getID());
+        Point p = npc.getLocation().getScreenLocation();
+
+        if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+            Mouse.move(p);
+            if (org.dynamac.bot.api.methods.Menu.getIndex(s) == 0) {
+                Mouse.click();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+            if (org.dynamac.bot.api.methods.Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+        }
+        if (org.dynamac.bot.api.methods.Menu.isOpen()) {
+            if (org.dynamac.bot.api.methods.Menu.contains(s)) {
+                org.dynamac.bot.api.methods.Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+
+    public static boolean interact(AnimableObject a, String s) {
+        a = Objects.getNearestAnimableObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+            Mouse.move(p);
+            if (org.dynamac.bot.api.methods.Menu.getIndex(s) == 0) {
+                Mouse.click();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+            if (org.dynamac.bot.api.methods.Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+        }
+        if (org.dynamac.bot.api.methods.Menu.isOpen()) {
+            if (org.dynamac.bot.api.methods.Menu.contains(s)) {
+                org.dynamac.bot.api.methods.Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+
+    public static boolean interact(AnimatedObject a, String s) {
+        a = Objects.getNearestAnimatedObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+
+        if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+            Mouse.move(p);
+            if (org.dynamac.bot.api.methods.Menu.getIndex(s) == 0) {
+                Mouse.click();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+            if (org.dynamac.bot.api.methods.Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+        }
+        if (org.dynamac.bot.api.methods.Menu.isOpen()) {
+            if (org.dynamac.bot.api.methods.Menu.contains(s)) {
+                org.dynamac.bot.api.methods.Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+
+    //Is it on the screen? even when the toolbar is open?
+    public static boolean isOnScreenWithToolbar(AnimatedObject a) {
+        Point p = a.getLocation().getScreenLocation();
+
+        if (ActionBar.isOpen()) {
+            if (TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        } else {
+            if (NO_TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isOnScreenWithToolbar(AnimableObject a) {
+        Point p = a.getLocation().getScreenLocation();
+
+        if (ActionBar.isOpen()) {
+            if (TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        } else {
+            if (NO_TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isOnScreenWithToolbar(NPC a) {
+        Point p = a.getLocation().getScreenLocation();
+
+        if (ActionBar.isOpen()) {
+            if (TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        } else {
+            if (NO_TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isOnScreenWithToolbar(BoundaryObject a) {
+        Point p = a.getLocation().getScreenLocation();
+
+        if (ActionBar.isOpen()) {
+            if (TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        } else {
+            if (NO_TOOLBAR_SCREEN.contains(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isSOF() {
+        InterfaceChild t = Interfaces.get(1252, 7);
+        return t!=null && t.isDisplayed();
+    }
+    public void cancelSOF() {
+        InterfaceChild t = Interfaces.get(1252, 7);
+        t.doAction("Select");
+    }
+
+
+
+
+
+
+
+}
