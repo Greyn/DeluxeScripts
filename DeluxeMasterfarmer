@@ -1,0 +1,143 @@
+import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.methods.Menu;
+import org.dynamac.bot.api.wrappers.AnimableObject;
+import org.dynamac.bot.api.wrappers.NPC;
+import org.dynamac.bot.api.wrappers.Tile;
+import org.dynamac.bot.script.ScriptDef;
+
+import java.awt.*;
+
+
+public class DeluxeMasterfarmer extends ScriptDef {
+
+    @Override
+    public void repaint(Graphics g) {
+        g.drawString("Time running: " + getTime(System.currentTimeMillis() - startTime), 90, 130);
+
+        g.drawString("Thieving xp: " + (currentxp - startxp), 90, 150);
+        g.drawString("Thieving xp/hr: " + ((currentxp - startxp)* 3600000l) / (System.currentTimeMillis() - startTime), 90, 165);
+    }
+
+    int[] masterfarmer = {2234};
+    int bank = 2015;
+    int food = 379;
+    int startxp;
+    int currentxp;
+    public long startTime;
+
+    @Override
+    public void run() {
+        startxp = Skills.getSkillExperience(Skills.THIEVING_INDEX);
+        startTime = System.currentTimeMillis();
+
+        while(true) {
+            currentxp = Skills.getSkillExperience(Skills.THIEVING_INDEX);
+            NPC FARMER = NPCs.getNearest(masterfarmer);
+            AnimableObject BANK = Objects.getNearestAnimableObjectByID(bank);
+            String hp = Interfaces.get(748, 8).getText();
+            int health = Integer.parseInt(hp);
+
+            if (!Bank.isOpen()) {
+                if (Inventory.getCount(food) > 0) {
+                    if (FARMER.isOnScreen()) {
+                        if (health <= 4000) {
+                            Inventory.getItemByID(food).doAction("Eat");
+                            sleep(500);
+                        }
+                        if (health > 4000) {
+                            if (Players.getMyPlayer().getAnimationID() != 424) {
+                                Point p = FARMER.getLocation().getScreenLocation();
+
+                                Mouse.move(p);
+
+                                if (!Menu.isOpen()) {
+                                    if (Menu.getIndex("Pickpocket" , "Master Farmer") == 0) {
+                                        Mouse.click();
+                                        org.dynamac.bot.script.ScriptDef.sleep(500);
+                                    }
+                                    if (Menu.getIndex("Pickpocket" , "Master Farmer") > 0) {
+                                        Mouse.rightClick();
+                                        org.dynamac.bot.script.ScriptDef.sleep(500);
+                                    }
+                                }
+                                if (Menu.isOpen()) {
+                                    if (Menu.contains("Pickpocket" , "Master Farmer")) {
+                                        Menu.click("Pickpocket" , "Master Farmer");
+                                    } else {
+                                        Mouse.move(Players.getMyPlayer().getRandomPoint());
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Tile[] toFarmer = Walking.generateStraightScreenPath(FARMER.getLocation());
+                        if (Walking.isPathLocal(toFarmer)) {
+                            Walking.walkPath(toFarmer);
+                        }
+                    }
+                }
+                if (Inventory.getCount(food) == 0) {
+                    if (BANK.isOnScreen()) {
+                        Point p = BANK.getLocation().getScreenLocation();
+
+                        Mouse.move(p);
+
+                        //DeluxeAPI.interact(BANK, "Bank");
+                        if (!Menu.isOpen()) {
+                            if (Menu.getIndex("Bank" , "Counter") == 0) {
+                                Mouse.click();
+                                org.dynamac.bot.script.ScriptDef.sleep(500);
+                            }
+                            if (Menu.getIndex("Bank" , "Counter") > 0) {
+                                Mouse.rightClick();
+                                org.dynamac.bot.script.ScriptDef.sleep(500);
+                            }
+                        }
+                        if (Menu.isOpen()) {
+                            if (Menu.contains("Bank" , "Counter")) {
+                                Menu.click("Bank" , "Counter");
+                            } else {
+                                Mouse.move(Players.getMyPlayer().getRandomPoint());
+                            }
+                        }
+                    } else {
+                        Tile[] toBank = Walking.generateStraightScreenPath(BANK.getLocation());
+                        if (Walking.isPathLocal(toBank)) {
+                            Walking.walkPath(toBank);
+                        }
+                    }
+                }
+            }
+            if (Bank.isOpen()) {
+                if(Inventory.getCount(food) >= 10) {
+                   Bank.close();
+                }
+                if (Inventory.getCountExcept(food) <= 10) {
+                    Bank.depositInventory();
+                    sleep(500);
+                    Bank.withdraw(food, 10);
+                    sleep(500);
+                }
+            }
+        }
+    }
+
+    public static String getTime(long millis) {
+        long time = millis / 1000;
+        String seconds = Integer.toString((int) (time % 60));
+        String minutes = Integer.toString((int) ((time % 3600) / 60));
+        String hours = Integer.toString((int) (time / 3600));
+        for (int i = 0; i < 2; i++) {
+            if (seconds.length() < 2) {
+                seconds = "0" + seconds;
+            }
+            if (minutes.length() < 2) {
+                minutes = "0" + minutes;
+            }
+            if (hours.length() < 2) {
+                hours = "0" + hours;
+            }
+        }
+        return hours + ":" + minutes + ":" + seconds + "";
+    }
+}
