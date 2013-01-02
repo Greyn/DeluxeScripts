@@ -1,4 +1,3 @@
-
 import org.dynamac.bot.api.methods.*;
 import org.dynamac.bot.api.methods.Menu;
 import org.dynamac.bot.api.methods.Mouse;
@@ -6,18 +5,15 @@ import org.dynamac.bot.api.wrappers.*;
 import org.dynamac.bot.script.ScriptDef;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.Graphics;
 import java.io.BufferedReader;
-import java.lang.System;
-import java.net.URL;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.net.URLConnection;
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.GroupLayout;
-import javax.swing.LayoutStyle;
+import java.util.ArrayList;
 
 public class DeluxeRunecrafter extends ScriptDef {
 
@@ -33,9 +29,8 @@ public class DeluxeRunecrafter extends ScriptDef {
     int talisman;
     //
     //Animable ID
-    int bank;
-    String action;
-    String action2;
+    int bankers;
+    boolean atWall = false;
     //
     //Paint
         boolean counted = false;
@@ -56,6 +51,8 @@ public class DeluxeRunecrafter extends ScriptDef {
     public static RCGUI gui = new RCGUI();
     public static boolean guiWait = true;
     public static boolean STARTED = false;
+
+    int[] cosmicwalk = {37340, 37341, 37338, 37339};
 
     boolean RESTING = false;
 
@@ -149,6 +146,22 @@ public class DeluxeRunecrafter extends ScriptDef {
             new Tile(3271, 3428, 0), new Tile(3266, 3428, 0), new Tile(3261, 3429, 0),
             new Tile(3256, 3429, 0), new Tile(3252, 3426, 0), new Tile(3252, 3421, 0),
             new Tile(3253, 3420, 0) };
+    Tile[] walktoCOSMICAltar = new Tile[] { new Tile(2386, 4458, 0), new Tile(2396, 4451, 0), new Tile(2408, 4444, 0),
+            new Tile(2415, 4437, 0), new Tile(2419, 4423), new Tile(2417, 4409, 0),
+            new Tile(2405, 4406, 0), new Tile(2394, 4407, 0), new Tile(2383, 4410, 0),
+            new Tile(2380, 4401, 0), new Tile(2390, 4395, 0), new Tile(2401, 4391),
+            new Tile(2406, 4384, 0), new Tile(2408, 4380, 0) };
+    Tile[] walktoCOSMICAltar46second = new Tile[] { new Tile(2400, 4393, 0), new Tile(2408, 4380) };
+    Tile[] walktoCOSMICAltar46first = new Tile[] { new Tile(2388, 4454, 0), new Tile(2396, 4452, 0), new Tile(2415, 4435, 0),
+            new Tile(2418, 4424, 0), new Tile(2416, 4412, 0), new Tile(2406, 4406, 0), new Tile(2400, 4407, 0)};
+    Tile[] walktoCOSMICBank = new Tile[] { new Tile(2406, 4384, 0), new Tile(2401, 4391, 0), new Tile(2390, 4395, 0),
+            new Tile(2380, 4401, 0), new Tile(2383, 4410, 0), new Tile(2394, 4407, 0),
+            new Tile(2405, 4406, 0), new Tile(2417, 4409, 0), new Tile(2419, 4423, 0),
+            new Tile(2415, 4437, 0), new Tile(2408, 4444, 0), new Tile(2396, 4451, 0), new Tile(2386, 4458, 0),
+            new Tile(2382, 4458, 0)};
+    Tile[] walktoCOSMICBank46second = new Tile[] { new Tile(2406, 4406, 0), new Tile(2416, 4412, 0), new Tile(2418, 4424, 0)
+            , new Tile(2415, 4435, 0), new Tile(2396, 4452, 0), new Tile(2388, 4454, 0), new Tile(2382, 4457, 0)};
+    Tile[] walktoCOSMICBank46first = new Tile[] { new Tile(2406, 4383, 0), new Tile(2400, 4392, 0), new Tile(2398, 4400, 0)};
 
     Rectangle SCREEN = new Rectangle(00, 00, 100, 100);
 
@@ -179,11 +192,37 @@ public class DeluxeRunecrafter extends ScriptDef {
         }
     }
 
+    public ArrayList<String> messageLogs = new ArrayList<String>();
+    public void logMessage(String s){
+        if(messageLogs.size()>0 && messageLogs.get(messageLogs.size()-1).equalsIgnoreCase(s))
+            return;
+        if(messageLogs.size()>=8)
+            messageLogs.remove(0);
+        long mill = System.currentTimeMillis();
+        long hour = mill / (1000 * 60 * 60);
+        mill -= hour * (1000 * 60 * 60);
+        hour = hour%12;
+        long min = mill / (1000 * 60);
+        mill -= min * (1000 * 60);
+        long sec = mill / 1000;
+        messageLogs.add("["+hour+":"+min+":"+sec+"] "+s);
+    }
+
     private final Image MAIN_PAINT = getImage("http://img338.imageshack.us/img338/9803/deluxerunecrafter.jpg");
 
     @Override
     public void repaint(Graphics g) {
         Walking.paintPath(g);
+
+        int x = 3;
+        int y = 280;
+        /*g.setColor(Color.BLACK);
+        g.fillRect(x, 395, 504, 130);  */
+        g.setColor(Color.WHITE);
+        for(String s : messageLogs){
+            g.drawString(s, x, y);
+            y+=15;
+        }
 
         g.drawImage(MAIN_PAINT, 0, 389, null);
         g.setColor(Color.white);{
@@ -216,9 +255,7 @@ public class DeluxeRunecrafter extends ScriptDef {
             ruin = 2452;
             altar = 2478;
             portal = 2465;
-            bank = 782;
-            action = "Bank";
-            action2 = "Bank booth";
+            bankers = 553;
 
             walktoBank = walktoAIRBank;
             walktoAltar = walktoAIRAltar;
@@ -231,9 +268,7 @@ public class DeluxeRunecrafter extends ScriptDef {
             ruin = 2453;
             altar = 2479;
             portal = 2466;
-            bank = 11758;
-            action = "Bank";
-            action2 = "Bank booth";
+            bankers = 6200;
 
             walktoBank = walktoMINDBank;
             walktoAltar = walktoMINDAltar;
@@ -246,9 +281,7 @@ public class DeluxeRunecrafter extends ScriptDef {
             ruin = 2457;
             altar = 2483;
             portal = 2470;
-            bank = 42373;
-            action = "Bank";
-            action2 = "Counter";
+            bankers = 553;
 
             walktoBank = walktoBODYBank;
             walktoAltar = walktoBODYAltar;
@@ -261,9 +294,7 @@ public class DeluxeRunecrafter extends ScriptDef {
             ruin = 2454;
             altar = 2480;
             portal = 2467;
-            bank = 76274;
-            action = "Bank";
-            action2 = "Bank booth";
+            bankers = 496;
 
             walktoBank = walktoWATERBank;
             walktoAltar = walktoWATERAltar;
@@ -276,9 +307,7 @@ public class DeluxeRunecrafter extends ScriptDef {
             ruin = 2456;
             altar = 2482;
             portal = 2469;
-            bank = 27663;
-            action = "Bank";
-            action2 = "Bank chest";
+            bankers = 958;
 
             walktoBank = walktoFIREBank;
             walktoAltar = walktoFIREAltar;
@@ -291,12 +320,37 @@ public class DeluxeRunecrafter extends ScriptDef {
             ruin = 2455;
             altar = 2481;
             portal = 2468;
-            bank = 782;
-            action = "Bank";
-            action2 = "Bank booth";
+            bankers = 553;
 
             walktoBank = walktoEARTHBank;
             walktoAltar = walktoEARTHAltar;
+        }
+
+        if (gui.comboBox2.getSelectedItem().toString().contains("Cosmic runes")) {
+            rune = 564;
+            essence = 7936;
+            talisman = 1454;
+
+            ruin = 2458;
+            altar = 2484;
+            portal = 2471;
+            bankers = 498;
+
+            walktoBank = walktoCOSMICBank;
+            walktoAltar = walktoCOSMICAltar;
+        }
+        if (gui.comboBox2.getSelectedItem().toString().contains("----- level 46")) {
+            rune = 564;
+            essence = 7936;
+            talisman = 1454;
+
+            ruin = 2458;
+            altar = 2484;
+            portal = 2471;
+            bankers = 498;
+
+            walktoBank = walktoCOSMICBank46first;
+            walktoAltar = walktoCOSMICAltar46first;
         }
 
 
@@ -310,168 +364,31 @@ public class DeluxeRunecrafter extends ScriptDef {
         }
         while(true) {
             if (STARTED == true) {
-                //Here i put all the bulsshit crap things
-                AnimatedObject RUIN = Objects.getNearestAnimatedObjectByID(ruin);
-                AnimatedObject ALTAR = Objects.getNearestAnimatedObjectByID(altar);
-                AnimatedObject PORTAL = Objects.getNearestAnimatedObjectByID(portal);
-                AnimableObject BANK  = Objects.getNearestAnimableObjectByID(bank);
-
-                currentxp = Skills.getSkillExperience(Skills.RUNECRAFTING_INDEX);
 
                 try {
+                //Here i put all the bulsshit crap things
+                AnimatedObject ALTAR = Objects.getNearestAnimatedObjectByID(altar);
+                AnimatedObject PORTAL = Objects.getNearestAnimatedObjectByID(portal);
+                NPC BANKERS = NPCs.getNearest(bankers);
+                currentxp = Skills.getSkillExperience(Skills.RUNECRAFTING_INDEX);
+
                     if (Players.getMyPlayer() != null) {
-                        if (BANK != null) {
-                            if (Bank.isOpen()) {
-                                if (Inventory.getCount(rune) > 0) {
-                                    s = "Deposit the inventory.." ;
-                                    Bank.depositAllExcept(talisman, spinticket);
-                                }
-                                if (Inventory.getCount(rune) == 0) {
-                                    if (Inventory.getCount(essence) == 0) {
-                                        s = "Withdraw the essence!";
-                                        Bank.withdraw(essence, 0);
-                                        sleep(1000);
-                                    }
-                                }
-                                if (Inventory.getCount(rune) == 0) {
-                                    if (Inventory.getCount(essence) > 0) {
-                                        s = "Close te bank!";
-                                        Bank.close();
-                                        sleep(500);
-                                    }
-                                }
-                            } else {
-                                if (isSOF()) {
-                                    cancelSOF();
-                                }
-                               if (BANK.isOnScreen()) {
-                                    if (Players.getMyPlayer().getAnimationID() == -1) {
-                                        if (Inventory.getCount(essence) == 0) {
-                                            Point p = BANK.getLocation().getScreenLocation();
-                                            if (!Menu.isOpen()) {
-                                                s = "Opening the bank";
-                                                Mouse.move(p);
-                                                if (Menu.getIndex(action, action2) == 0) {
-                                                    Mouse.click();
-                                                    sleep(1500);
-                                                }
-                                                if (Menu.getIndex("Bank", "Bank booth") > 0) {
-                                                    Mouse.rightClick();
-                                                    sleep(1500);
-                                                }
-                                            }
-                                            if (Menu.isOpen()) {
-                                                if (Menu.contains("Bank", "Bank booth")) {
-                                                    Menu.click("Bank", "Bank booth");
-                                                } else {
-                                                    Mouse.move(Players.getMyPlayer().getRandomPoint());
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+
+                        if (!Camera.isUp()) {
+                            logMessage("Camera is down, turning it up!");
+                            Camera.setPitch(3000);
+                        }
+
+                        if (BANKERS != null && ALTAR == null) {
+                            goBanking();
                         }
 
                         if (ALTAR == null) {
-                            if (Inventory.getCount(essence) > 0) {
-                                counted = false;
-                                if (RUIN == null) {
-                                    if (Walking.isPathLocal(walktoAltar)) {
-                                        s = "Walking to ruins";
-                                        Walking.walkPath(walktoAltar);
-                                    }
-                                }
-                                if (RUIN != null) {
-                                    if (gui.radioButton1.isSelected() || gui.radioButton3.isSelected()) {
-                                        Camera.turnTo(RUIN.getLocation());
-                                        s = "Entering the altar";
-                                        interact(RUIN, "Enter");
-                                    }
-                                    if (gui.radioButton2.isSelected() || gui.radioButton4.isSelected()) {
-                                        if (Inventory.getItemByID(talisman).isSelected()) {
-                                            Point p = RUIN.getLocation().getScreenLocation();
-                                            if (!Menu.isOpen()) {
-                                                Mouse.move(p);
-                                                if (Menu.getIndex("Use", "Mysterious ruins") == 0) {
-                                                    Mouse.click();
-                                                    sleep(1500);
-                                                }
-                                                if (Menu.getIndex("Use", "Mysterious ruins") > 0) {
-                                                    Mouse.rightClick();
-                                                    sleep(1500);
-                                                }
-                                            }
-                                            if (Menu.isOpen()) {
-                                                if (Menu.contains("Use", "Mysterious ruins")) {
-                                                    Menu.click("Use", "Mysterious ruins");
-                                                } else {
-                                                    Mouse.move(Players.getMyPlayer().getRandomPoint());
-                                                }
-                                            }
-                                        } else {
-                                            Inventory.getItemByID(talisman).doAction("Use");
-                                            sleep(800);
-                                        }
-                                    }
-                                }
-                            }
-                            if (Inventory.getCount(essence) == 0) {
-                                if (!Bank.isOpen()) {
-                                    if (Walking.isPathLocal(walktoBank)) {
-                                        s = "Walking to the bank";
-                                        Walking.walkPath(walktoBank);
-                                    }
-                                }
-                            }
+                            goRuin();
                         }
 
-                        if (ALTAR != null) {
-                            if (Players.getMyPlayer().getAnimationID() == -1) {
-                                if (Inventory.getCount(essence) > 0) {
-                                    if (ALTAR.isOnScreen()) {
-                                        do {
-                                            Camera.turnTo(PORTAL.getLocation());
-                                        } while(Players.getMyPlayer().getAnimationID() == 791);
-                                        s = "Crafting the runes";
-                                        if (cameraaltar == false) {
-                                            if (Players.getMyPlayer().getAnimationID() != 791) {
-
-                                                    interact(ALTAR, "Craft");
-
-                                                Camera.turnTo(ALTAR.getLocation());
-                                                interact(ALTAR, "Craft");
-                                                cameraaltar = true;
-                                            }
-                                        }
-                                        interact(ALTAR, "Craft");
-                                    } else {
-                                        Tile[] walktoAltar = Walking.generateStraightScreenPath(ALTAR.getLocation());
-                                        if (Walking.isPathLocal(walktoAltar)) {
-                                            s = "Walking to the altar";
-                                            Walking.walkPath(walktoAltar);
-                                        }
-                                    }
-                                }
-                                if (Inventory.getCount(essence) == 0) {
-                                    if (counted == false) {
-                                        runecount = runecount + Inventory.getItemByID(rune).getStackSize();
-                                        counted = true;
-                                    }
-                                    if (PORTAL.isOnScreen()) {
-                                        Camera.turnTo(PORTAL.getLocation());
-                                        s = "Leaving altar";
-                                        interact(PORTAL, "Enter");
-                                        cameraaltar = false;
-                                    } else {
-                                        Tile[] walktoPortal = Walking.generateStraightScreenPath(PORTAL.getLocation());
-                                        if (Walking.isPathLocal(walktoPortal)) {
-                                            Walking.walkPath(walktoPortal);
-                                        }
-                                        Camera.turnTo(PORTAL.getLocation());
-                                    }
-                                }
-                            }
+                        if (ALTAR != null || PORTAL != null) {
+                            goAltar();
                         }
                     }
                 }catch (final NullPointerException e) {
@@ -480,79 +397,201 @@ public class DeluxeRunecrafter extends ScriptDef {
         }
     }
 
+    public boolean goBanking() {
+        AnimatedObject RUIN  = Objects.getNearestAnimatedObjectByID(ruin);
+        NPC BANKERS = NPCs.getNearest(bankers);
 
-    private final boolean interact(NPC npc, String s) {
-        npc = NPCs.getNearest(npc.getID());
-        Point p = npc.getLocation().getScreenLocation();
+        if (Bank.isOpen()) {
+            counted = false;
+            if (Inventory.getCount(rune) > 0) {
+                logMessage("Runes found in inventory, banking them.");
+                s = "Deposit the inventory.." ;
+                Bank.depositAllExcept(talisman, spinticket);
+            }
+            if (Inventory.getCount(rune) == 0) {
+                if (Inventory.getCount(essence) == 0) {
+                    logMessage("There is no essence! WITHDRAW IT!");
+                    s = "Withdraw the essence!";
+                    Bank.withdraw(essence, 0);
+                    sleep(1000);
+                }
+                if (Inventory.getCount(essence) > 0) {
+                    if (RUIN == null) {
+                        logMessage("Where is the ruin? Walk to it!");
+                        if (Walking.isPathLocal(walktoAltar)) {
+                            s = "Walking to ruins";
+                            Walking.walkPath(walktoAltar);
+                        }
+                    }
+                }
+            }
+        } else {
+            if (isSOF()) {
+                logMessage("Fcking SOF, lets remove it!");
+                cancelSOF();
+            }
 
-        if (!Menu.isOpen()) {
-            Mouse.move(p);
-            if (Menu.getIndex(s) == 0) {
-                Mouse.click();
-                sleep(500);
-            }
-            if (Menu.getIndex(s) > 0) {
-                Mouse.rightClick();
-                sleep(500);
-            }
-        }
-        if (Menu.isOpen()) {
-            if (Menu.contains(s)) {
-                Menu.click(s);
+            if (BANKERS.isOnScreen()) {
+                DeluxeAPI.interact(BANKERS, "Bank");
             } else {
-                Mouse.move(Players.getMyPlayer().getRandomPoint());
+                if (Inventory.getCount(essence) == 0) {
+                    logMessage("We need to bank, WALK TO IT!");
+                    Tile[] toBank = Walking.generateStraightScreenPath(BANKERS.getLocation());
+                    if (Walking.isPathLocal(toBank)) {
+                        Walking.walkPath(toBank);
+                    }
+                }
+                if (Inventory.getCount(essence) > 0) {
+                   return false;
+                }
             }
         }
         return false;
     }
-    private final boolean interact(AnimableObject a, String s) {
-        a = Objects.getNearestAnimableObjectByID(a.getID());
-        Point p = a.getLocation().getScreenLocation();
 
-        if (!Menu.isOpen()) {
-            Mouse.move(p);
-            if (Menu.getIndex(s) == 0) {
-                Mouse.click();
-                sleep(500);
+    public boolean goRuin() {
+        AnimatedObject RUIN  = Objects.getNearestAnimatedObjectByID(ruin);
+        AnimableObject Level46 = Objects.getNearestAnimableObjectByID(12127);
+
+        if (Inventory.getCount(essence) > 0) {
+            if (RUIN == null) {
+                logMessage("WHERE IS THE RUIN!");
+                if (Walking.isPathLocal(walktoAltar)) {
+                    s = "Walking to ruins";
+                    Walking.walkPath(walktoAltar);
+                }
             }
-            if (Menu.getIndex(s) > 0) {
-                Mouse.rightClick();
-                sleep(500);
+            if (RUIN != null) {
+                if (gui.radioButton1.isSelected() || gui.radioButton3.isSelected()) {
+                    logMessage("Whe need to enter the ruin, or else...");
+                    if (RUIN.isOnScreen()) {
+                        s = "Entering the altar";
+                        DeluxeAPI.interact(RUIN, "Enter");
+                    } else {
+                        Tile[] toRuin = Walking.generateStraightScreenPath(RUIN.getLocation());
+                        if (Walking.isPathLocal(toRuin)) {
+                            Walking.walkPath(toRuin);
+                        }
+                    }
+                }
+                if (gui.radioButton2.isSelected() || gui.radioButton4.isSelected()) {
+                    logMessage("Whe need to enter the ruin, or else...");
+                    if (RUIN.isOnScreen()) {
+                        if (Inventory.getItemByID(talisman).isSelected()) {
+                            Point p = RUIN.getLocation().getScreenLocation();
+                            if (!Menu.isOpen()) {
+                                Mouse.move(p);
+                                if (Menu.getIndex("Use", "Mysterious ruins") == 0) {
+                                    Mouse.click();
+                                    sleep(1500);
+                                }
+                                if (Menu.getIndex("Use", "Mysterious ruins") > 0) {
+                                    Mouse.rightClick();
+                                    sleep(1500);
+                                }
+                            }
+                            if (Menu.isOpen()) {
+                                if (Menu.contains("Use", "Mysterious ruins")) {
+                                    Menu.click("Use", "Mysterious ruins");
+                                } else {
+                                    Mouse.move(Players.getMyPlayer().getRandomPoint());
+                                }
+                            }
+                        } else {
+                            Inventory.getItemByID(talisman).doAction("Use");
+                            sleep(800);
+                        }
+                    } else {
+                        Tile[] toRuin = Walking.generateStraightScreenPath(RUIN.getLocation());
+                        if (Walking.isPathLocal(toRuin)) {
+                            Walking.walkPath(toRuin);
+                        }
+                    }
+                }
             }
         }
-        if (Menu.isOpen()) {
-            if (Menu.contains(s)) {
-                Menu.click(s);
-            } else {
-                Mouse.move(Players.getMyPlayer().getRandomPoint());
+        if (Inventory.getCount(essence) == 0) {
+            if (!Bank.isOpen()) {
+                logMessage("Ye we need to bank..");
+                if (Walking.isPathLocal(walktoBank)) {
+                    s = "Walking to the bank";
+                    Walking.walkPath(walktoBank);
+                }
             }
         }
         return false;
     }
-    private final boolean interact(AnimatedObject a, String s) {
-        a = Objects.getNearestAnimatedObjectByID(a.getID());
-        Point p = a.getLocation().getScreenLocation();
 
-        if (!Menu.isOpen()) {
-            Mouse.move(p);
-            if (Menu.getIndex(s) == 0) {
-                Mouse.click();
-                sleep(500);
-            }
-            if (Menu.getIndex(s) > 0) {
-                Mouse.rightClick();
-                sleep(500);
+    public boolean goAltar() {
+        AnimatedObject ALTAR = Objects.getNearestAnimatedObjectByID(altar);
+        AnimatedObject PORTAL = Objects.getNearestAnimatedObjectByID(portal);
+
+
+        if (ALTAR != null) {
+            if (Players.getMyPlayer().getAnimationID() == -1) {
+                logMessage("We need to make runes..");
+                if (Inventory.getCount(essence) > 0) {
+                    if (ALTAR.isOnScreen()) {
+                        if (Players.getMyPlayer().getAnimationID() == 791) {
+                            Camera.turnTo(PORTAL.getLocation());
+                        }
+                         s = "Crafting the runes";
+                         DeluxeAPI.interact(ALTAR, "Craft");
+                    } else {
+                        Tile[] walktoAltar = Walking.generateStraightScreenPath(ALTAR.getLocation());
+                        if (Walking.isPathLocal(walktoAltar)) {
+                            s = "Walking to the altar";
+                            Walking.walkPath(walktoAltar);
+                        }
+                        if (!Walking.isPathLocal(walktoAltar)) {
+                            AnimatedObject spots = Objects.getNearestAnimatedObjectByID(44441);
+                            Tile[] walktoSpot = Walking.generateStraightScreenPath(spots.getLocation());
+                            if (Walking.isPathLocal(walktoSpot)) {
+                                Walking.walkPath(walktoSpot);
+                            }
+                        }
+                    }
+                }
+                if (Inventory.getCount(essence) == 0) {
+                    logMessage("Ye, now we need to leave. Or we die..");
+                    if (counted == false) {
+                        runecount = runecount + Inventory.getItemByID(rune).getStackSize();
+                        counted = true;
+                    }
+                    if (PORTAL.isOnScreen()) {
+                        s = "Leaving altar";
+                        DeluxeAPI.interact(PORTAL, "Enter");
+                        cameraaltar = false;
+                    } else {
+                        Tile[] walktoPortal = Walking.generateStraightScreenPath(PORTAL.getLocation());
+                        if (Walking.isPathLocal(walktoPortal)) {
+                            Walking.walkPath(walktoPortal);
+                        }
+                    }
+                }
             }
         }
-        if (Menu.isOpen()) {
-            if (Menu.contains(s)) {
-                Menu.click(s);
-            } else {
-                Mouse.move(Players.getMyPlayer().getRandomPoint());
+
+        if (ALTAR == null) {
+            if (gui.comboBox2.getSelectedItem().toString().contains("Cosmic runes")) {
+                AnimatedObject spots = Objects.getNearestAnimatedObjectByID(44441);
+                AnimableObject cosmicspots = Objects.getNearestAnimableObjectByID(cosmicwalk);
+                Tile[] walktoSpot = Walking.generateStraightScreenPath(spots.getLocation());
+                Tile[] walktoCosmicSpot = Walking.generateStraightScreenPath(cosmicspots.getLocation());
+                if (!Walking.isPathLocal(walktoCosmicSpot)) {
+                    if (Walking.isPathLocal(walktoSpot)) {
+                        Walking.walkPath(walktoSpot);
+                    }
+                }
+                if (Walking.isPathLocal(walktoCosmicSpot)) {
+                    Walking.walkPath(walktoCosmicSpot);
+                }
             }
         }
+
         return false;
     }
+
 
     private static int getPrice(int id) {
         try {
@@ -577,220 +616,261 @@ public class DeluxeRunecrafter extends ScriptDef {
 
     public boolean isSOF() {
         InterfaceChild t = Interfaces.get(1252, 7);
-        return t!=null && t.isDisplayed();
+        return (t != null) && (t.isDisplayed());
     }
     public void cancelSOF() {
         InterfaceChild t = Interfaces.get(1252, 7);
         t.doAction("Select");
     }
 
-
-    /**
-     * @author Greyn Dynamac
-     */
-    public static class RCGUI extends JFrame {
-        public RCGUI() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner Evaluation license - Greyn Dynamac
-            button1 = new JButton();
-            textField1 = new JTextField();
-            textField2 = new JTextField();
-            tabbedPane1 = new JTabbedPane();
-            panel1 = new JPanel();
-            comboBox1 = new JComboBox();
-            radioButton1 = new JRadioButton();
-            radioButton2 = new JRadioButton();
-            panel2 = new JPanel();
-            comboBox2 = new JComboBox();
-            radioButton3 = new JRadioButton();
-            radioButton4 = new JRadioButton();
-
-            //======== this ========
-            Container contentPane = getContentPane();
-
-            //---- button1 ----
-            button1.setText("Start");
-           // button1.setBackground(Color.red);
-            button1.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    button1ActionPerformed(evt);
+    /*private final boolean wheelOfTurningClose() {
+        InterfaceChild childAbuse = Interfaces.get(1252, 7);
+        if(childAbuse != null && childAbuse.getRelativeX() != 0) {
+            if(mxMouse.moveMouse(childAbuse.getBounds(), true)) { //Else we might click at the border.
+                if(childAbuse.getBounds().contains(Mouse.getLocation())) {
+                    Mouse.click();
+                    KTimer t = new KTimer(1500);
+                    while(!t.isDone()) {
+                        childAbuse = Interfaces.get(1252, 7);
+                        if(childAbuse != null && childAbuse.getRelativeX() == 0) {
+                            System.out.println("[Optimal] Closed childAbuse interface.");
+                            return true;
+                        }
+                    }
                 }
-            });
+            }
+            return wheelOfTurningClose();
+        }
+        return true;
+    } */
 
-            //---- textField1 ----
-            textField1.setText("Welcome to DeluxeRunecrafter");
+    private final boolean turnCompass(final Tile l) {
+        new Thread() {
+            public void run() {
+                if(l != null && !l.isOnScreen()) {
+                    Camera.turnTo(l);
+                }
+            }
+        }.start();
+        return true; //Soz my bad CBA to change
+    }
 
-            //---- textField2 ----
-            textField2.setText("Select what to craft and how :)");
 
-            //======== tabbedPane1 ========
+/**
+ * @author Greyn Dynamac
+ */
+public static class RCGUI extends JFrame {
+    public RCGUI() {
+        initComponents();
+    }
+
+    private void initComponents() {
+        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        // Generated using JFormDesigner Evaluation license - Greyn Dynamac
+        button1 = new JButton();
+        textField1 = new JTextField();
+        textField2 = new JTextField();
+        tabbedPane1 = new JTabbedPane();
+        panel1 = new JPanel();
+        comboBox1 = new JComboBox();
+        radioButton1 = new JRadioButton();
+        radioButton2 = new JRadioButton();
+        panel2 = new JPanel();
+        comboBox2 = new JComboBox();
+        radioButton3 = new JRadioButton();
+        radioButton4 = new JRadioButton();
+
+        //======== this ========
+        Container contentPane = getContentPane();
+
+        //---- button1 ----
+        button1.setText("Start");
+       // button1.setBackground(Color.red);
+        button1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                button1ActionPerformed(evt);
+            }
+        });
+
+        //---- textField1 ----
+        textField1.setText("Welcome to DeluxeRunecrafter");
+
+        //---- textField2 ----
+        textField2.setText("Select what to craft and how :)");
+
+        //======== tabbedPane1 ========
+        {
+
+            //======== panel1 ========
             {
 
-                //======== panel1 ========
-                {
 
+                //---- comboBox1 ----
+                String[] arrayOfString1 = { "Select what to craft.",
+                        "Air runes",
+                        "Water runes",
+                        "Earth runes",
+                        "Fire runes",
+                        "Mind runes",
+                        "Body runes"};
+                comboBox1 = new JComboBox(arrayOfString1);
+                comboBox1.setToolTipText("Rune type");
+                comboBox1.setBackground(Color.lightGray);
 
-                    //---- comboBox1 ----
-                    String[] arrayOfString1 = { "Select what to craft.",
-                            "Air runes",
-                            "Water runes",
-                            "Earth runes",
-                            "Fire runes",
-                            "Mind runes",
-                            "Body runes"};
-                    comboBox1 = new JComboBox(arrayOfString1);
-                    comboBox1.setToolTipText("Rune type");
-                    comboBox1.setBackground(Color.lightGray);
+                //---- radioButton1 ----
+                radioButton1.setText("I am wearing an tiara");
+                radioButton1.setSelected(true);
 
-                    //---- radioButton1 ----
-                    radioButton1.setText("I am wearing an tiara");
-                    radioButton1.setSelected(true);
+                //---- radioButton2 ----
+                radioButton2.setText("I have an talisman");
 
-                    //---- radioButton2 ----
-                    radioButton2.setText("I have an talisman");
-
-                    GroupLayout panel1Layout = new GroupLayout(panel1);
-                    panel1.setLayout(panel1Layout);
-                    panel1Layout.setHorizontalGroup(
-                            panel1Layout.createParallelGroup()
-                                    .addGroup(panel1Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .addGroup(panel1Layout.createParallelGroup()
-                                                    .addComponent(comboBox1, GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                                                    .addGroup(panel1Layout.createSequentialGroup()
-                                                            .addGroup(panel1Layout.createParallelGroup()
-                                                                    .addComponent(radioButton2)
-                                                                    .addComponent(radioButton1))
-                                                            .addGap(0, 176, Short.MAX_VALUE)))
-                                            .addContainerGap())
-                    );
-                    panel1Layout.setVerticalGroup(
-                            panel1Layout.createParallelGroup()
-                                    .addGroup(panel1Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .addComponent(comboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .addGap(18, 18, 18)
-                                            .addComponent(radioButton1)
-                                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(radioButton2)
-                                            .addContainerGap(62, Short.MAX_VALUE))
-                    );
-                }
-                tabbedPane1.addTab("Free to play", panel1);
-
-
-                //======== panel2 ========
-                {
-
-                    //---- radioButton3 ----
-                    radioButton3.setText("I am wearing an tiara");
-                    radioButton3.setSelected(true);
-
-                    //---- radioButton4 ----
-                    radioButton4.setText("I have an talisman");
-
-                    GroupLayout panel2Layout = new GroupLayout(panel2);
-                    panel2.setLayout(panel2Layout);
-                    panel2Layout.setHorizontalGroup(
-                            panel2Layout.createParallelGroup()
-                                    .addGroup(panel2Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .addGroup(panel2Layout.createParallelGroup()
-                                                    .addComponent(comboBox2, GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
-                                                    .addGroup(panel2Layout.createSequentialGroup()
-                                                            .addGroup(panel2Layout.createParallelGroup()
-                                                                    .addComponent(radioButton4)
-                                                                    .addComponent(radioButton3))
-                                                            .addGap(0, 176, Short.MAX_VALUE)))
-                                            .addContainerGap())
-                    );
-                    panel2Layout.setVerticalGroup(
-                            panel2Layout.createParallelGroup()
-                                    .addGroup(panel2Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .addComponent(comboBox2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .addGap(18, 18, 18)
-                                            .addComponent(radioButton3)
-                                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(radioButton4)
-                                            .addContainerGap(62, Short.MAX_VALUE))
-                    );
-                }
-                tabbedPane1.addTab("Members", panel2);
-
+                GroupLayout panel1Layout = new GroupLayout(panel1);
+                panel1.setLayout(panel1Layout);
+                panel1Layout.setHorizontalGroup(
+                        panel1Layout.createParallelGroup()
+                                .addGroup(panel1Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addGroup(panel1Layout.createParallelGroup()
+                                                .addComponent(comboBox1, GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                                                .addGroup(panel1Layout.createSequentialGroup()
+                                                        .addGroup(panel1Layout.createParallelGroup()
+                                                                .addComponent(radioButton2)
+                                                                .addComponent(radioButton1))
+                                                        .addGap(0, 176, Short.MAX_VALUE)))
+                                        .addContainerGap())
+                );
+                panel1Layout.setVerticalGroup(
+                        panel1Layout.createParallelGroup()
+                                .addGroup(panel1Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addComponent(comboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(radioButton1)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(radioButton2)
+                                        .addContainerGap(62, Short.MAX_VALUE))
+                );
             }
+            tabbedPane1.addTab("Free to play", panel1);
 
-            GroupLayout contentPaneLayout = new GroupLayout(contentPane);
-            contentPane.setLayout(contentPaneLayout);
-            contentPaneLayout.setHorizontalGroup(
-                    contentPaneLayout.createParallelGroup()
-                            .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(textField2)
-                                            .addComponent(textField1)
-                                            .addComponent(tabbedPane1))
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(button1, GroupLayout.PREFERRED_SIZE, 76, GroupLayout.PREFERRED_SIZE)
-                                    .addContainerGap(9, Short.MAX_VALUE))
-            );
-            contentPaneLayout.setVerticalGroup(
-                    contentPaneLayout.createParallelGroup()
-                            .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addGroup(contentPaneLayout.createParallelGroup()
-                                            .addGroup(contentPaneLayout.createSequentialGroup()
-                                                    .addComponent(textField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(textField2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                    .addGap(11, 11, 11)
-                                                    .addComponent(tabbedPane1))
-                                            .addComponent(button1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addContainerGap())
-            );
-            pack();
-            setLocationRelativeTo(getOwner());
 
-            //---- buttonGroup1 ----
-            ButtonGroup buttonGroup1 = new ButtonGroup();
-            buttonGroup1.add(radioButton1);
-            buttonGroup1.add(radioButton2);
-            buttonGroup1.add(radioButton3);
-            buttonGroup1.add(radioButton4);
+            //======== panel2 ========
+            {
 
-            /*//---- buttonGroup2 ----
-            ButtonGroup buttonGroup2 = new ButtonGroup();
-            buttonGroup2.add(radioButton3);
-            buttonGroup2.add(radioButton4);   */
-            // JFormDesigner - End of component initialization  //GEN-END:initComponents
+                //---- comboBox2 ----
+                String[] arrayOfString2 = { "Select what to craft.",
+                        "Cosmic runes",
+                        "----- level 66",
+                        "----- level 46"};
+                comboBox2 = new JComboBox(arrayOfString2);
+                comboBox2.setToolTipText("Rune type");
+                comboBox2.setBackground(Color.lightGray);
+
+                //---- radioButton3 ----
+                radioButton3.setText("I am wearing an tiara");
+                radioButton3.setSelected(true);
+
+                //---- radioButton4 ----
+                radioButton4.setText("I have an talisman");
+
+                GroupLayout panel2Layout = new GroupLayout(panel2);
+                panel2.setLayout(panel2Layout);
+                panel2Layout.setHorizontalGroup(
+                        panel2Layout.createParallelGroup()
+                                .addGroup(panel2Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addGroup(panel2Layout.createParallelGroup()
+                                                .addComponent(comboBox2, GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                                                .addGroup(panel2Layout.createSequentialGroup()
+                                                        .addGroup(panel2Layout.createParallelGroup()
+                                                                .addComponent(radioButton4)
+                                                                .addComponent(radioButton3))
+                                                        .addGap(0, 176, Short.MAX_VALUE)))
+                                        .addContainerGap())
+                );
+                panel2Layout.setVerticalGroup(
+                        panel2Layout.createParallelGroup()
+                                .addGroup(panel2Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .addComponent(comboBox2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(radioButton3)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(radioButton4)
+                                        .addContainerGap(62, Short.MAX_VALUE))
+                );
+            }
+            tabbedPane1.addTab("Members", panel2);
+
         }
 
-        private void button1ActionPerformed(java.awt.event.ActionEvent evt) {
-            guiWait = false;
-            gui.dispose();
-            STARTED = true;
-        }
+        GroupLayout contentPaneLayout = new GroupLayout(contentPane);
+        contentPane.setLayout(contentPaneLayout);
+        contentPaneLayout.setHorizontalGroup(
+                contentPaneLayout.createParallelGroup()
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(textField2)
+                                        .addComponent(textField1)
+                                        .addComponent(tabbedPane1))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(button1, GroupLayout.PREFERRED_SIZE, 76, GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(9, Short.MAX_VALUE))
+        );
+        contentPaneLayout.setVerticalGroup(
+                contentPaneLayout.createParallelGroup()
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(contentPaneLayout.createParallelGroup()
+                                        .addGroup(contentPaneLayout.createSequentialGroup()
+                                                .addComponent(textField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(textField2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                                .addGap(11, 11, 11)
+                                                .addComponent(tabbedPane1))
+                                        .addComponent(button1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap())
+        );
+        pack();
+        setLocationRelativeTo(getOwner());
 
-        // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-        // Generated using JFormDesigner Evaluation license - Greyn Dynamac
-        private JButton button1;
-        private JTextField textField1;
-        private JTextField textField2;
-        private JTabbedPane tabbedPane1;
-        private JPanel panel1;
-        private JComboBox comboBox1;
-        private JRadioButton radioButton1;
-        private JRadioButton radioButton2;
-        private JPanel panel2;
-        private JComboBox comboBox2;
-        private JRadioButton radioButton3;
-        private JRadioButton radioButton4;
-        // JFormDesigner - End of variables declaration  //GEN-END:variables
+        //---- buttonGroup1 ----
+        ButtonGroup buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(radioButton1);
+        buttonGroup1.add(radioButton2);
+        buttonGroup1.add(radioButton3);
+        buttonGroup1.add(radioButton4);
+
+        /*//---- buttonGroup2 ----
+        ButtonGroup buttonGroup2 = new ButtonGroup();
+        buttonGroup2.add(radioButton3);
+        buttonGroup2.add(radioButton4);   */
+        // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
+
+    private void button1ActionPerformed(java.awt.event.ActionEvent evt) {
+        guiWait = false;
+        gui.dispose();
+        STARTED = true;
+    }
+
+    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    // Generated using JFormDesigner Evaluation license - Greyn Dynamac
+    private JButton button1;
+    private JTextField textField1;
+    private JTextField textField2;
+    private JTabbedPane tabbedPane1;
+    private JPanel panel1;
+    private JComboBox comboBox1;
+    private JRadioButton radioButton1;
+    private JRadioButton radioButton2;
+    private JPanel panel2;
+    private JComboBox comboBox2;
+    private JRadioButton radioButton3;
+    private JRadioButton radioButton4;
+    // JFormDesigner - End of variables declaration  //GEN-END:variables
+}
 
 
 
