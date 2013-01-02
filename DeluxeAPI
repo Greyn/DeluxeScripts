@@ -1,32 +1,47 @@
 import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.methods.Menu;
 import org.dynamac.bot.api.methods.Mouse;
 import org.dynamac.bot.api.wrappers.*;
+import org.dynamac.reflection.ClassHook;
+import org.dynamac.reflection.FieldHook;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class DeluxeAPI {
     public static Rectangle NO_TOOLBAR_SCREEN = new Rectangle(4, 53, 509, 329);
     public static Rectangle TOOLBAR_SCREEN = new Rectangle(4, 53, 510, 256);
+    private static FieldHook name;
+    public Object currentObject;
+    private static ClassHook currentHook;
+
+
 
     //Mouse interacting
     public static boolean interact(NPC npc, String s) {
         npc = NPCs.getNearest(npc.getID());
         Point p = npc.getLocation().getScreenLocation();
+        String c =  "Customise";
 
-        if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+        String ss = npc.getNPCName();
+
+        if (!Menu.isOpen()) {
             Mouse.move(p);
-            if (org.dynamac.bot.api.methods.Menu.getIndex(s) == 0) {
+            if (Menu.getIndex(c) == 0) {
+                Camera.turnTo(npc);
+            }
+            if (Menu.getIndex(s, ss) == 0) {
                 Mouse.click();
                 org.dynamac.bot.script.ScriptDef.sleep(500);
             }
-            if (org.dynamac.bot.api.methods.Menu.getIndex(s) > 0) {
+            if (Menu.getIndex(s, ss) > 0) {
                 Mouse.rightClick();
                 org.dynamac.bot.script.ScriptDef.sleep(500);
             }
         }
-        if (org.dynamac.bot.api.methods.Menu.isOpen()) {
-            if (org.dynamac.bot.api.methods.Menu.contains(s)) {
-                org.dynamac.bot.api.methods.Menu.click(s);
+        if (Menu.isOpen()) {
+            if (Menu.contains(s, ss)) {
+                Menu.click(s, ss);
             } else {
                 Mouse.move(Players.getMyPlayer().getRandomPoint());
             }
@@ -37,21 +52,25 @@ public class DeluxeAPI {
     public static boolean interact(AnimableObject a, String s) {
         a = Objects.getNearestAnimableObjectByID(a.getID());
         Point p = a.getLocation().getScreenLocation();
+        String c =  "Customise";
 
-        if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+        if (!Menu.isOpen()) {
             Mouse.move(p);
-            if (org.dynamac.bot.api.methods.Menu.getIndex(s) == 0) {
+            if (Menu.getIndex(c) == 0) {
+                Camera.turnTo(a.getLocation());
+            }
+            if (Menu.getIndex(s) == 0) {
                 Mouse.click();
                 org.dynamac.bot.script.ScriptDef.sleep(500);
             }
-            if (org.dynamac.bot.api.methods.Menu.getIndex(s) > 0) {
+            if (Menu.getIndex(s) > 0) {
                 Mouse.rightClick();
                 org.dynamac.bot.script.ScriptDef.sleep(500);
             }
         }
-        if (org.dynamac.bot.api.methods.Menu.isOpen()) {
-            if (org.dynamac.bot.api.methods.Menu.contains(s)) {
-                org.dynamac.bot.api.methods.Menu.click(s);
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
             } else {
                 Mouse.move(Players.getMyPlayer().getRandomPoint());
             }
@@ -62,21 +81,53 @@ public class DeluxeAPI {
     public static boolean interact(AnimatedObject a, String s) {
         a = Objects.getNearestAnimatedObjectByID(a.getID());
         Point p = a.getLocation().getScreenLocation();
+        String c =  "Customise";
 
-        if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+        if (!Menu.isOpen()) {
             Mouse.move(p);
-            if (org.dynamac.bot.api.methods.Menu.getIndex(s) == 0) {
+            if (Menu.getIndex(c) == 0) {
+                Camera.turnTo(a.getLocation());
+            }
+            if (Menu.getIndex(s) == 0) {
                 Mouse.click();
                 org.dynamac.bot.script.ScriptDef.sleep(500);
             }
-            if (org.dynamac.bot.api.methods.Menu.getIndex(s) > 0) {
+            if (Menu.getIndex(s) > 0) {
                 Mouse.rightClick();
                 org.dynamac.bot.script.ScriptDef.sleep(500);
             }
         }
-        if (org.dynamac.bot.api.methods.Menu.isOpen()) {
-            if (org.dynamac.bot.api.methods.Menu.contains(s)) {
-                org.dynamac.bot.api.methods.Menu.click(s);
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
+            } else {
+                Mouse.move(Players.getMyPlayer().getRandomPoint());
+            }
+        }
+        return false;
+    }
+    public static boolean interact(BoundaryObject a, String s) {
+        a = Objects.getNearestBoundaryObjectByID(a.getID());
+        Point p = a.getLocation().getScreenLocation();
+        String c =  "Customise";
+
+        if (!Menu.isOpen()) {
+            Mouse.move(p);
+            if (Menu.getIndex(c) == 0) {
+                Camera.turnTo(a.getLocation());
+            }
+            if (Menu.getIndex(s) == 0) {
+                Mouse.click();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+            if (Menu.getIndex(s) > 0) {
+                Mouse.rightClick();
+                org.dynamac.bot.script.ScriptDef.sleep(500);
+            }
+        }
+        if (Menu.isOpen()) {
+            if (Menu.contains(s)) {
+                Menu.click(s);
             } else {
                 Mouse.move(Players.getMyPlayer().getRandomPoint());
             }
@@ -100,13 +151,14 @@ public class DeluxeAPI {
         return false;
     }
     public static boolean isOnScreenWithToolbar(AnimableObject a) {
-        Point p = a.getLocation().getScreenLocation();
 
         if (ActionBar.isOpen()) {
+            Point p = a.getLocation().getScreenLocation();
             if (TOOLBAR_SCREEN.contains(p)) {
                 return true;
             }
         } else {
+            Point p = a.getLocation().getScreenLocation();
             if (NO_TOOLBAR_SCREEN.contains(p)) {
                 return true;
             }
@@ -142,18 +194,16 @@ public class DeluxeAPI {
         return false;
     }
 
-    public boolean isSOF() {
-        InterfaceChild t = Interfaces.get(1252, 7);
-        return t!=null && t.isDisplayed();
+    public String getOBJECTName(){
+        if(name==null)
+            name = currentHook.getFieldHook("getOBJECTName");
+        if(name!=null){
+            Object data = name.get(currentObject);
+            if(data!=null)
+                return data.toString();
+        }
+        return "";
     }
-    public void cancelSOF() {
-        InterfaceChild t = Interfaces.get(1252, 7);
-        t.doAction("Select");
-    }
-
-
-
-
 
 
 
