@@ -1,0 +1,82 @@
+import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.wrappers.AnimableObject;
+import org.dynamac.bot.api.wrappers.Tile;
+import org.dynamac.bot.script.ScriptDef;
+
+import java.awt.*;
+import java.awt.Menu;
+
+public class DeluxeWillows extends ScriptDef{
+
+    int[] willows = {38627, 58006, 38616};
+    int willowlog = 1519;
+    int bank = 2015;
+
+    @Override
+    public void repaint(Graphics g) {
+
+    }
+
+    @Override
+    public void run() {
+        while(true) {
+            try {
+                AnimableObject BANK = Objects.getNearestAnimableObjectByID(bank);
+                AnimableObject WILLOWS =Objects.getNearestAnimableObjectByID(willows);
+                if (Bank.isOpen()) {
+                    if (Inventory.isFull()) {
+                        Bank.depositInventory();
+                    } else {
+                        Bank.close();
+                    }
+                }
+                if (!Bank.isOpen()) {
+                    if (Inventory.isFull()) {
+                        if (BANK.isOnScreen()) {
+                            Point p = BANK.getLocation().getScreenLocation();
+
+                            Mouse.move(p);
+
+                            if (!org.dynamac.bot.api.methods.Menu.isOpen()) {
+                                if (org.dynamac.bot.api.methods.Menu.getIndex("Bank", "Counter") == 0) {
+                                    Mouse.click();
+                                    org.dynamac.bot.script.ScriptDef.sleep(500);
+                                }
+                                if (org.dynamac.bot.api.methods.Menu.getIndex("Bank", "Counter") > 0) {
+                                    Mouse.rightClick();
+                                    org.dynamac.bot.script.ScriptDef.sleep(500);
+                                }
+                            }
+                            if (org.dynamac.bot.api.methods.Menu.isOpen()) {
+                                if (org.dynamac.bot.api.methods.Menu.contains("Bank", "Counter")) {
+                                    org.dynamac.bot.api.methods.Menu.click("Bank", "Counter");
+                                } else {
+                                    Mouse.move(Players.getMyPlayer().getRandomPoint());
+                                }
+                            }
+                        } else {
+                            Tile[] toBank = Walking.generateStraightScreenPath(BANK.getLocation());
+                            if (Walking.isPathLocal(toBank)) {
+                                Walking.walkPath(toBank);
+                            }
+                        }
+                    } else {
+                        if (WILLOWS.isOnScreen()) {
+                            if (Players.getMyPlayer().getAnimationID() != 2846) {
+                                DeluxeAPI.interact(WILLOWS, "Chop");
+                            }
+                        } else {
+                            Tile[] toWillows = Walking.generateStraightScreenPath(WILLOWS.getLocation());
+                            if (Walking.isPathLocal(toWillows)) {
+                                Walking.walkPath(toWillows);
+                            }
+                        }
+                    }
+                }
+
+
+            }catch (final NullPointerException e) {
+            }
+        }
+    }
+}
