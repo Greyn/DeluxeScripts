@@ -1,0 +1,107 @@
+import org.dynamac.bot.api.methods.*;
+import org.dynamac.bot.api.wrappers.NPC;
+import org.dynamac.bot.api.wrappers.Tile;
+import org.dynamac.bot.script.ScriptDef;
+
+import java.awt.*;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: Maikel
+ * Date: 2-1-13
+ * Time: 12:56
+ * To change this template use File | Settings | File Templates.
+ */
+public class DeluxeWarriorKiller extends ScriptDef {
+
+    int[] warrior_id = {18};
+    int bank_id = 496;
+
+    int food;
+
+    Tile[] toBank = new Tile[] { new Tile(3292, 3166, 0), new Tile(3292, 3171, 0), new Tile(3292, 3176, 0),
+            new Tile(3291, 3181, 0), new Tile(3286, 3182, 0), new Tile(3281, 3182, 0),
+            new Tile(3276, 3180, 0), new Tile(3274, 3175, 0), new Tile(3274, 3170, 0),
+            new Tile(3270, 3167, 0) };
+    Tile[] toWarriors = new Tile[] { new Tile(3269, 3167, 0), new Tile(3274, 3168, 0), new Tile(3275, 3173, 0),
+            new Tile(3276, 3178, 0), new Tile(3280, 3181, 0), new Tile(3285, 3180, 0),
+            new Tile(3290, 3179, 0), new Tile(3292, 3174, 0), new Tile(3292, 3169, 0),
+            new Tile(3292, 3166, 0) };
+
+    @Override
+    public void repaint(Graphics g) {
+
+    }
+
+    @Override
+    public void run() {
+        while(true) {
+            try {
+                NPC WARRIOR = NPCs.getNearest(warrior_id);
+                NPC BANK = NPCs.getNearest(bank_id);
+                String hp = Interfaces.get(748, 8).getText();
+                int health = Integer.parseInt(hp);
+
+                if (Bank.isOpen()) {
+                    if (Inventory.getCount(379) > 10) {
+                        if (Walking.isPathLocal(toWarriors)) {
+                            Walking.walkPath(toWarriors);
+                        }
+                    }
+                    if (Inventory.getCount(379) <= 10) {
+                        sleep(500);
+                        Bank.depositInventory();
+                        sleep(500);
+                        Bank.withdraw(379, 0);
+                        sleep(500);
+                    }
+                }
+                if (!Bank.isOpen()) {
+                    if (Inventory.getCount(379) > 0) {
+                        if (health <= 1500) {
+                            Inventory.getItemByID(379).doAction("Eat");
+                        }
+                        if (health > 1500) {
+                            if (WARRIOR.isOnScreen()) {
+                                if (Players.getMyPlayer().isIdle()) {
+                                    turnCompass(WARRIOR.getLocation());
+                                    DeluxeAPI.interact(WARRIOR, "Attack");
+                                }
+                                if (Players.getMyPlayer().getAnimationID() == 18241) {
+
+                                }
+                            }
+                            if (!WARRIOR.isOnScreen()) {
+                                if (Walking.isPathLocal(toWarriors)) {
+                                    Walking.walkPath(toWarriors);
+                                }
+                            }
+                        }
+                    }
+                    if (Inventory.getCount(379) == 0) {
+                        if (BANK.isOnScreen()) {
+                            DeluxeAPI.interact(BANK, "Bank");
+                        }
+                        if (!BANK.isOnScreen()) {
+                            if (Walking.isPathLocal(toBank)) {
+                                Walking.walkPath(toBank);
+                            }
+                        }
+                    }
+                }
+            }catch (final NullPointerException e) {
+            }
+        }
+    }
+
+    private final boolean turnCompass(final Tile l) {
+        new Thread() {
+            public void run() {
+                if(l != null && !l.isOnScreen()) {
+                    Camera.turnTo(l);
+                }
+            }
+        }.start();
+        return true; //Soz my bad CBA to change
+    }
+}
